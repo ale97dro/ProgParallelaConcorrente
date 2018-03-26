@@ -67,7 +67,7 @@ class GPS implements Runnable {
 
 public class Esercizio2 
 {
-	static boolean completed = false;
+	static volatile boolean  completed = false;
 	static Lock lock = new ReentrantLock();
 	static Coordinate curLocation = null;
 	

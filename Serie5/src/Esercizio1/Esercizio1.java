@@ -36,8 +36,7 @@ public class Esercizio1
 {
 	private final static AtomicBoolean isRunning = new AtomicBoolean(true); //variabile condivisa
 	private static volatile int sharedValue = 0; //variabile condivisa
-	
-	//stack confinement
+		
 	public static int getSharedValue()
 	{
 		return sharedValue;
@@ -48,7 +47,8 @@ public class Esercizio1
 		return isRunning.get();
 	}
 
-	public static void main(final String[] args) {
+	public static void main(final String[] args) 
+	{
 		final ArrayList<Thread> allThread = new ArrayList<>();
 		final Random random = new Random();
 
