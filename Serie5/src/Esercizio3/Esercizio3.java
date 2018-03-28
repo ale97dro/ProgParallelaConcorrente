@@ -37,7 +37,6 @@ class Sportello implements Runnable
 				Esercizio3.unlock();
 			}
 			
-			
 			double importo_convertito=importo*tasso;
 			
 			System.out.println("Thread "+thread+" Importo: "+importo+" Valuta1: "+valuta1+" Valuta2: "+valuta2+" ImportoConvertito: "+importo_convertito);
@@ -114,8 +113,8 @@ class TassiDiCambio
 	}
 }
 
-public class Esercizio3 {
-
+public class Esercizio3
+{
 	private static volatile boolean continua=true;
 	private static TassiDiCambio tassi=null;
 	private static Lock lock=new ReentrantLock();
@@ -147,17 +146,13 @@ public class Esercizio3 {
 		}
 	}
 	
-	
-	
 	public static void main(String[] args) throws InterruptedException
 	{
 		System.out.println("Esercizio 3");
 		List<Thread>sportelli=new ArrayList<Thread>();
 		
 		for(int i=0;i<10;i++)
-		{
 			sportelli.add(new Thread(new Sportello(i)));
-		}
 		
 		for(Thread t : sportelli)
 			t.start();
