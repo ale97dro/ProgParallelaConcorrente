@@ -34,6 +34,28 @@ final class Holder implements IState
 	}
 }
 
+final class SharedState implements IState 
+{
+	private final Holder holder;
+
+	public SharedState(int value)
+	{
+		holder=new Holder(value);
+	}
+	
+	@Override
+	public SharedState increment() 
+	{
+		return new SharedState(holder.getValue()+1);
+	}
+
+	@Override
+	public int getValue() 
+	{
+		return holder.getValue();
+	}
+}
+
 
 class Helper implements Runnable {
 	@Override
@@ -76,7 +98,7 @@ class Starter implements Runnable {
 
 		System.out.println("Starter : initialized shared state");
 		
-		Esercizio2Modificato.sharedState=new Holder(0);
+		Esercizio2Modificato.sharedState=new SharedState(0);
 		
 		// Sleep before updating
 		try {
@@ -101,7 +123,7 @@ class Starter implements Runnable {
 public class Esercizio2Modificato {
 	public static final boolean THREADSAFE_SHARE = false;
 
-	static volatile Holder sharedState = null; //volatile
+	static volatile SharedState sharedState = null; //volatile
 
 	public static void main(final String[] args) {
 		System.out.println("Esercizio 2 modificato");
