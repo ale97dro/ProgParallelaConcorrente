@@ -12,7 +12,7 @@ interface IState {
 	int getValue();
 }
 
-final class Holder
+final class Holder implements IState
 {
 	private final int value;
 	
@@ -21,11 +21,13 @@ final class Holder
 		this.value=value;
 	}
 	
+	@Override
 	public Holder increment()
 	{
 		return new Holder(value+1);
 	}
 	
+	@Override
 	public int getValue()
 	{
 		return value;
@@ -73,7 +75,6 @@ class Starter implements Runnable {
 		}
 
 		System.out.println("Starter : initialized shared state");
-		
 		
 		Esercizio2Modificato.sharedState=new Holder(0);
 		
