@@ -3,9 +3,8 @@ package Esercizio2Modificato;
 import Esercizio2Modificato.Esercizio2Modificato;
 import Esercizio2Modificato.Helper;
 import Esercizio2Modificato.IState;
-import Esercizio2Modificato.SharedState;
 import Esercizio2Modificato.Starter;
-import Esercizio2Modificato.ThreadSafeSharedState;
+
 
 interface IState {
 	IState increment();
@@ -13,42 +12,26 @@ interface IState {
 	int getValue();
 }
 
-final class SharedState implements IState {
+final class Holder
+{
 	private final int value;
 	
-	public SharedState(int value)
+	public Holder(int value)
 	{
 		this.value=value;
 	}
-
-	@Override
-	public synchronized IState increment() {
-		return new SharedState(value+1);
-	}
-
-	@Override
-	public synchronized int getValue() {
-		return value;
-	}
-}
-
-final class ThreadSafeSharedState implements IState {
-	private final int value;
 	
-	public ThreadSafeSharedState(int value) {
-		this.value=value;
+	public Holder increment()
+	{
+		return new Holder(value+1);
 	}
-
-	@Override
-	public synchronized IState increment() {
-		return new ThreadSafeSharedState(value+1);
-	}
-
-	@Override
-	public synchronized int getValue() {
+	
+	public int getValue()
+	{
 		return value;
 	}
 }
+
 
 class Helper implements Runnable {
 	@Override
@@ -91,12 +74,9 @@ class Starter implements Runnable {
 
 		System.out.println("Starter : initialized shared state");
 		
-		// Choose which share to instantiate
-		if (Esercizio2Modificato.THREADSAFE_SHARE)
-			Esercizio2Modificato.sharedState = new ThreadSafeSharedState(0);
-		else
-			Esercizio2Modificato.sharedState = new SharedState(0);
-
+		
+		Esercizio2Modificato.sharedState=new Holder(0);
+		
 		// Sleep before updating
 		try {
 			Thread.sleep(1000);
@@ -120,7 +100,7 @@ class Starter implements Runnable {
 public class Esercizio2Modificato {
 	public static final boolean THREADSAFE_SHARE = false;
 
-	static volatile IState sharedState = null; //volatile
+	static volatile Holder sharedState = null; //volatile
 
 	public static void main(final String[] args) {
 		System.out.println("Esercizio 2 modificato");
