@@ -1,44 +1,53 @@
 package Esercizio2Modificato;
 
-import Esercizio2Modificato.Esercizio2Modificato;
-import Esercizio2Modificato.Helper;
-import Esercizio2Modificato.IState;
-import Esercizio2Modificato.Starter;
-
+import Esercizio2Modificato.SharedState;
 
 interface IState {
-	IState increment();
+	void increment();
 
 	int getValue();
 }
 
-final class SharedState implements IState 
+final class Holder
 {
 	private final int value;
-
-	public SharedState(int value)
+	
+	public Holder(int value)
 	{
 		this.value=value;
 	}
 	
-	@Override
-	public SharedState increment() 
-	{
-		return new SharedState(value+1);
-	}
-
-	@Override
-	public int getValue() 
+	public int getValue()
 	{
 		return value;
 	}
 }
 
+final class SharedState implements IState 
+{
+	private Holder holder;
+	
+	public SharedState(int value) 
+	{
+		holder=new Holder(value);
+	}
+
+	@Override
+	public synchronized void increment() 
+	{
+		holder=new Holder(holder.getValue()+1);
+	}
+
+	@Override
+	public synchronized int getValue() 
+	{
+		return holder.getValue();
+	}
+}
 
 class Helper implements Runnable {
 	@Override
-	public void run() { //thread di sola lettura
-		
+	public void run() {
 		System.out.println("Helper : started and waiting until shared state is set!");
 		while (true) {
 			if (Esercizio2Modificato.sharedState != null)
@@ -59,17 +68,15 @@ class Helper implements Runnable {
 			}
 		}
 		System.out.println("Helper : value changed to " + lastValue + "!");
-		
-		//Qui? Bho!
+
 		for (int i = 0; i < 5000; i++) {
-			Esercizio2Modificato.sharedState=Esercizio2Modificato.sharedState.increment();
+			Esercizio2Modificato.sharedState.increment();
 			if ((i % 100) == 0)
 				try {
 					Thread.sleep(1);
 				} catch (final InterruptedException e) {
 				}
 		}
-
 		System.out.println("Helper : completed");
 	}
 }
@@ -77,7 +84,7 @@ class Helper implements Runnable {
 class Starter implements Runnable {
 
 	@Override
-	public void run() { //Unico thread che può scrivere
+	public void run() {
 		System.out.println("Starter : sleeping");
 		try {
 			Thread.sleep(1000);
@@ -85,9 +92,10 @@ class Starter implements Runnable {
 		}
 
 		System.out.println("Starter : initialized shared state");
+		// Choose which share to instantiate
 		
-		Esercizio2Modificato.sharedState=new SharedState(0);
-		
+		Esercizio2Modificato.sharedState = new SharedState(0);
+
 		// Sleep before updating
 		try {
 			Thread.sleep(1000);
@@ -97,7 +105,7 @@ class Starter implements Runnable {
 		// Perform 5000 increments and exit
 		System.out.println("Starter : begin incrementing");
 		for (int i = 0; i < 5000; i++) {
-			Esercizio2Modificato.sharedState=Esercizio2Modificato.sharedState.increment();
+			Esercizio2Modificato.sharedState.increment();
 			if ((i % 100) == 0)
 				try {
 					Thread.sleep(1);
@@ -109,12 +117,12 @@ class Starter implements Runnable {
 }
 
 public class Esercizio2Modificato {
-	public static final boolean THREADSAFE_SHARE = false;
+	public static final boolean THREADSAFE_SHARE = true;
 
 	static volatile IState sharedState = null; //volatile
 
 	public static void main(final String[] args) {
-		System.out.println("Esercizio 2 modificato");
+		System.out.println("Esercizio2 modificato");
 		// Create Threads
 		final Thread readThread = new Thread(new Helper());
 		final Thread updateThread = new Thread(new Starter());
