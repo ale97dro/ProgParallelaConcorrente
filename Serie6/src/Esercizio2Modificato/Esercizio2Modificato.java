@@ -12,47 +12,25 @@ interface IState {
 	int getValue();
 }
 
-final class Holder implements IState
+final class SharedState implements IState 
 {
 	private final int value;
-	
-	public Holder(int value)
+
+	public SharedState(int value)
 	{
 		this.value=value;
 	}
 	
 	@Override
-	public Holder increment()
-	{
-		return new Holder(value+1);
-	}
-	
-	@Override
-	public int getValue()
-	{
-		return value;
-	}
-}
-
-final class SharedState implements IState 
-{
-	private final Holder holder;
-
-	public SharedState(int value)
-	{
-		holder=new Holder(value);
-	}
-	
-	@Override
 	public SharedState increment() 
 	{
-		return new SharedState(holder.getValue()+1);
+		return new SharedState(value+1);
 	}
 
 	@Override
 	public int getValue() 
 	{
-		return holder.getValue();
+		return value;
 	}
 }
 
@@ -81,6 +59,16 @@ class Helper implements Runnable {
 			}
 		}
 		System.out.println("Helper : value changed to " + lastValue + "!");
+		
+		//Qui? Bho!
+		for (int i = 0; i < 5000; i++) {
+			Esercizio2Modificato.sharedState=Esercizio2Modificato.sharedState.increment();
+			if ((i % 100) == 0)
+				try {
+					Thread.sleep(1);
+				} catch (final InterruptedException e) {
+				}
+		}
 
 		System.out.println("Helper : completed");
 	}
@@ -106,9 +94,9 @@ class Starter implements Runnable {
 		} catch (final InterruptedException e) {
 		}
 
-		// Perform 10000 increments and exit
+		// Perform 5000 increments and exit
 		System.out.println("Starter : begin incrementing");
-		for (int i = 0; i < 10000; i++) {
+		for (int i = 0; i < 5000; i++) {
 			Esercizio2Modificato.sharedState=Esercizio2Modificato.sharedState.increment();
 			if ((i % 100) == 0)
 				try {
