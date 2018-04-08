@@ -41,7 +41,7 @@ class Helper implements Runnable {
 		
 		System.out.println("Helper : started and waiting until shared state is set!");
 		while (true) {
-			if (Esercizio2Modificato.sharedState != null) //evitare check then act
+			if (Esercizio2Modificato.sharedState != null)
 				break;
 		}
 
@@ -111,7 +111,7 @@ class Starter implements Runnable {
 public class Esercizio2Modificato {
 	public static final boolean THREADSAFE_SHARE = false;
 
-	static volatile SharedState sharedState = null; //volatile
+	static volatile IState sharedState = null; //volatile
 
 	public static void main(final String[] args) {
 		System.out.println("Esercizio 2 modificato");
