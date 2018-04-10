@@ -102,7 +102,12 @@ class S6ServiziPubblici {
 		}
 
 		// Libera bagno
-		bagnoOccupato.libera();
+		lock.lock();
+		try
+		{
+			bagnoOccupato.libera();
+		}
+		finally { lock.unlock(); }
 
 		return true;
 	}
