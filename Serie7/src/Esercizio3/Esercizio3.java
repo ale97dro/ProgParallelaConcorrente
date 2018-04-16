@@ -13,13 +13,10 @@ class Amico implements Runnable
 	private final int id;
 	private Amico amico;
 	private final List<String> casella_posta;
-	private int counter_lettere;
-	private int counter_risposte;
 	
 	public Amico(int id)
 	{
 		this.id=id;
-		counter_risposte=0;
 		casella_posta=new ArrayList<String>();
 	}
 	
@@ -28,10 +25,11 @@ class Amico implements Runnable
 	{
 		System.out.println("Thread "+id);
 		
+		int counter_risposte=0;
 		int counter_lettere=ThreadLocalRandom.current().nextInt(2, 6);
 		
 		for(int i=0;i<counter_lettere;i++)
-			amico.aggiungiLettera("Messaggio "+i);
+			amico.spedisciLettera("Messaggio "+i);
 		
 		while (counter_risposte < 150) 
 		{
@@ -44,7 +42,7 @@ class Amico implements Runnable
 			}
 			lock.lock();
 			try {
-				System.out.println(id + " ricevuto messaggio " + casella_posta.get(0));
+				System.out.println("Utente " + id + " ricevuto messaggio " + casella_posta.get(0));
 			} finally {
 				lock.unlock();
 			}
@@ -55,7 +53,7 @@ class Amico implements Runnable
 				e.printStackTrace();
 			}
 
-			amico.aggiungiLettera("Messaggio " + counter_lettere + " " + counter_risposte);
+			amico.spedisciLettera("Messaggio " + counter_lettere);
 			counter_lettere++;
 			counter_risposte++;
 
@@ -70,17 +68,7 @@ class Amico implements Runnable
 
 	}
 	
-	public int getId()
-	{
-		return id;
-	}
-	
-	public int getCounterLettere()
-	{
-		return counter_lettere;
-	}
-	
-	public void aggiungiLettera(String lettera)
+	public void spedisciLettera(String lettera)
 	{
 		casella_posta.add(lettera);
 	}
