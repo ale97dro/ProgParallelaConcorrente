@@ -68,6 +68,7 @@ class Amico implements Runnable
 
 public class Esercizio3Concurrent {
 	public static void main(String[] args) {
+		System.out.print("Esercizio 3 Concurrent");
 		List<Thread> threads = new ArrayList<Thread>();
 		List<Amico> amici = new ArrayList<Amico>();
 

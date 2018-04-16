@@ -3,13 +3,9 @@ package Esercizio3;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 class Amico implements Runnable
 {
-	private static Lock lock=new ReentrantLock();
-	
 	private final int id;
 	private Amico amico;
 	private final List<String> casella_posta;
@@ -33,21 +29,11 @@ class Amico implements Runnable
 		
 		while (counter_risposte < 150) 
 		{
-			lock.lock();
-			try {
-				if (isCasellaVuota())
-					continue;
-			} finally {
-				lock.unlock();
-			}
-			lock.lock();
-			try {
-				System.out.println("Utente " + id + " ricevuto messaggio " + casella_posta.get(0));
-			} finally {
-				lock.unlock();
-			}
+					if (isCasellaVuota())
+						continue;				
+					System.out.println("Utente " + id + " ricevuto messaggio " + casella_posta.get(0));
 
-			try {
+				try {
 				Thread.sleep(ThreadLocalRandom.current().nextLong(5, 51));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -57,18 +43,11 @@ class Amico implements Runnable
 			counter_lettere++;
 			counter_risposte++;
 
-			lock.lock();
-			try {
-				rimuoviLettera();
-			} finally {
-				lock.unlock();
-			}
-
+			rimuoviLettera();
 		}
-
 	}
 	
-	public void spedisciLettera(String lettera)
+	public synchronized void spedisciLettera(String lettera)
 	{
 		casella_posta.add(lettera);
 	}
@@ -78,12 +57,12 @@ class Amico implements Runnable
 		this.amico=amico;
 	}
 	
-	private boolean isCasellaVuota()
+	private synchronized boolean isCasellaVuota()
 	{
 		return casella_posta.isEmpty();
 	}
 	
-	private void rimuoviLettera()
+	private synchronized void rimuoviLettera()
 	{
 		casella_posta.remove(0);
 	}
@@ -93,6 +72,8 @@ public class Esercizio3
 {
 	public static void main(String[] args)
 	{
+		System.out.println("Esercizio 3 Synchronized");
+		
 		List<Thread>threads=new ArrayList<Thread>();
 		List<Amico>amici=new ArrayList<Amico>();
 	
