@@ -2,9 +2,7 @@ package Esercizio2;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.atomic.AtomicReference;
 
 class Rectangle {
     private final int x1;
@@ -40,6 +38,28 @@ class Rectangle {
     public int getY2() {
         return y2;
     }
+    
+    public Rectangle resize(int deltaX2, int deltaY2)
+    {
+    	final int newX2, newY2;
+        final boolean isLine, isPoint, isNegative;
+        
+       
+        newX2 = x2 + deltaX2;
+        newY2 = y2 + deltaY2;
+
+        isLine = (x1 == newX2)
+                || (y1 == newY2);
+        isPoint = (x1 == newX2)
+                && (y1 == newY2);
+        isNegative = (x1 > newX2)
+                || (y1 > newY2);
+       
+        if (!isLine && !isPoint && !isNegative) 
+        	return new Rectangle(x1, y1, newX2, newY2);
+        else
+        	return null;
+    }
 
     @Override
     public String toString() {
@@ -47,64 +67,35 @@ class Rectangle {
     }
 }
 
-class Resizer implements Runnable {
+class Resizer implements Runnable 
+{
     @Override
-    public void run() {
+    public void run() 
+    {
         final Random random = new Random();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1000; i++) 
+        {
             try {
                 Thread.sleep(random.nextInt(3) + 2);
             } catch (final InterruptedException e) {
             }
 
-            // genera variazione per punti tra -2 e 2
-            final int deltaX2 = random.nextInt(5) - 2;
-            final int deltaY2 = random.nextInt(5) - 2;
-
-            // calcola nuove coordinate x2 e y2
-            final int newX2, newY2;
-            final boolean isLine, isPoint, isNegative;
+            Rectangle oldRect;
+            Rectangle newRect;
             
-            EsercizioRettangolo.readLock.lock();
-            try
+            do
             {
-	            newX2 = EsercizioRettangolo.rect.getX2() + deltaX2;
-	            newY2 = EsercizioRettangolo.rect.getY2() + deltaY2;
-	
-	            isLine = (EsercizioRettangolo.rect.getX1() == newX2)
-	                    || (EsercizioRettangolo.rect.getY1() == newY2);
-	            isPoint = (EsercizioRettangolo.rect.getX1() == newX2)
-	                    && (EsercizioRettangolo.rect.getY1() == newY2);
-	            isNegative = (EsercizioRettangolo.rect.getX1() > newX2)
-	                    || (EsercizioRettangolo.rect.getY1() > newY2);
-            }
-            finally { EsercizioRettangolo.readLock.unlock(); }
+            	oldRect=EsercizioRettangolo.rect.get();
+            	// genera variazione per punti tra -2 e 2
+            	final int deltaX2 = random.nextInt(5) - 2;
+            	final int deltaY2 = random.nextInt(5) - 2;
 
-            // La trasformazione non deve rendere il rettangolo una linea, un
-            // punto o avere le coordinate del secondo punto 'dietro' al punto
-            // iniziale
-            if (!isLine && !isPoint && !isNegative) {
-            	final int x1;
-            	final int y1;
-            	EsercizioRettangolo.readLock.lock();;
-            	try
-            	{
-            		x1=EsercizioRettangolo.rect.getX1();
-                	y1=EsercizioRettangolo.rect.getY1();
-            	}
-            	finally { EsercizioRettangolo.readLock.unlock(); }
-            	
-            	Rectangle temp=Rectangle.factoryRectangle(x1, y1, newX2, newY2);
-            	
-            	EsercizioRettangolo.writeLock.lock();
-            	try
-            	{
-	                EsercizioRettangolo.rect= temp;
-	                System.out.println(EsercizioRettangolo.rect);
-            	}
-            	finally { EsercizioRettangolo.writeLock.unlock(); }
+            	newRect=oldRect.resize(deltaX2, deltaY2);
             }
-        }
+            while((newRect==null)||(!EsercizioRettangolo.rect.compareAndSet(oldRect, newRect)));
+            
+            System.out.println(newRect); 
+          }
     }
 }
 
@@ -113,11 +104,7 @@ class Resizer implements Runnable {
  */
 public class EsercizioRettangolo 
 {
-    static volatile Rectangle rect=Rectangle.factoryRectangle(10, 10, 20, 20);
-    
-    private static ReadWriteLock lock=new ReentrantReadWriteLock();
-    public static Lock readLock=lock.readLock();
-    public static Lock writeLock=lock.writeLock();
+    static AtomicReference<Rectangle> rect=new AtomicReference<Rectangle>(Rectangle.factoryRectangle(10, 10, 20, 20));
     
     public static void main(final String[] args) 
     {
