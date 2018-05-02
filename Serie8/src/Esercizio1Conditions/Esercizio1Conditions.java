@@ -120,6 +120,7 @@ public class Esercizio1Conditions {
 			somma_righe+=rowSum[i];
 	//	counter=0;
 		
+		/*
 		lock.lock();
 		try
 		{
@@ -134,6 +135,15 @@ public class Esercizio1Conditions {
 		{
 			lock.unlock();
 		}
+		*/
+		
+		for(Thread t : threads)
+			try {
+				t.join();
+			} catch (InterruptedException e) 
+		{
+				e.printStackTrace();
+			}
 		
 		for(int i=0;i<10;i++)
 			somma_colonne+=colSum[i];

@@ -1,8 +1,9 @@
-package Esercizio1Wait;
+package Esercizio1Synchronizers;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Phaser;
 
 class Sommatore implements Runnable
 {
@@ -22,6 +23,8 @@ class Sommatore implements Runnable
 		
 		for(int i=0;i<colonna2.length;i++)
 			this.colonna[i]=colonna2[i];
+		
+		Esercizio1Synchronizers.registrati();
 	}
 	
 	@Override
@@ -31,48 +34,62 @@ class Sommatore implements Runnable
 		
 		for(int i=0;i<riga.length;i++)
 			somma+=riga[i];
-		Esercizio1Wait.inserisciSommaRiga(somma, id);
+		Esercizio1Synchronizers.inserisciSommaRiga(somma, id);
 		
 		somma=0;
 		
 		for(int i=0;i<colonna.length;i++)
 			somma+=colonna[i];
-		Esercizio1Wait.inserisciSommaColonna(somma, id);
+		Esercizio1Synchronizers.inserisciSommaColonna(somma, id);
 	}
-	
 }
 
 
-public class Esercizio1Wait {
-	final static int[][] matrix = new int[10][10];
-	final static int[] rowSum = new int[matrix.length];
-	final static int[] colSum = new int[matrix[0].length];
-	static int counter=0;
+public class Esercizio1Synchronizers 
+{
+	private final static int[][] matrix = new int[10][10];
+	private final static int[] rowSum = new int[matrix.length];
+	private final static int[] colSum = new int[matrix[0].length];
+	private final static Phaser phaser=new Phaser(1);
+	private static int counter=0;
 
+	public static void registrati()
+	{
+		phaser.register();
+	}
 	public static void inserisciSommaRiga(int somma, int index)
 	{
-		synchronized(rowSum)
-		{
+		try {
 			rowSum[index]=somma;
 			counter++;
-			rowSum.notify();
+			//phaser.register(); //mi registro
+			phaser.arriveAndDeregister(); //sblocco tutto e mi deregistro
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Errore");
 		}
 	}
 	
 	public static void inserisciSommaColonna(int somma, int index)
 	{
-		synchronized(colSum)
+		try
 		{
 			colSum[index]=somma;
 			counter++;
-			colSum.notify();
+			//phaser.register();
+			phaser.arriveAndDeregister();
 		}
+		catch(Exception ex)
+		{
+			System.out.println("Errore");
+		}
+		
 	}
-	
 	
 	public static void main(String[] args) 
 	{
-		System.out.println("Esercizio1Wait");
+		System.out.println("Esercizio1Synchronizers");
 		List<Thread>threads=new ArrayList<>();
 		int somma_righe=0, somma_colonne=0;
 		
@@ -92,28 +109,30 @@ public class Esercizio1Wait {
 		for(Thread t : threads)
 			t.start();
 		
-		synchronized(rowSum)
+		try
 		{
-			while (counter != 10) {
-
-				try {
-					rowSum.wait();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+			//while (counter < 10) 
+			//{
+				phaser.arriveAndAwaitAdvance();
+			//}
 		}
-		
+		catch(Exception ex)
+		{
+			System.out.println("Errore");
+		}
 		
 		for(int i=0;i<10;i++)
 			somma_righe+=rowSum[i];
+
 		
 		for(Thread t : threads)
 			try {
 				t.join();
-			} catch (InterruptedException e) {
+			} catch (InterruptedException e) 
+		{
 				e.printStackTrace();
 			}
+		
 		for(int i=0;i<10;i++)
 			somma_colonne+=colSum[i];
 		
