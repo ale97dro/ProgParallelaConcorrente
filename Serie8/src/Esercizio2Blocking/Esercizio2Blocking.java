@@ -2,20 +2,19 @@ package Esercizio2Blocking;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
 
 class Amico implements Runnable
 {
 	private final int id;
 	private Amico amico;
-	private final Queue<String>casella_posta;
+	private final LinkedBlockingQueue<String>casella_posta;
 	
 	public Amico(int id)
 	{
 		this.id=id;
-		casella_posta=new ConcurrentLinkedQueue<String>();
+		casella_posta=new LinkedBlockingQueue<String>();
 	}
 	
 	@Override
@@ -31,12 +30,13 @@ class Amico implements Runnable
 		
 		while (counter_risposte < 150) 
 		{
-					if (isCasellaVuota())
-						continue;				
-					System.out.println("Utente " + id + " ricevuto messaggio " + casella_posta.poll());
-					//coda.take()
+			try {
+				System.out.println("Utente " + id + " ricevuto messaggio " + casella_posta.take());
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
 
-				try {
+			try {
 				Thread.sleep(ThreadLocalRandom.current().nextLong(5, 51));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -56,11 +56,6 @@ class Amico implements Runnable
 	public void aggiungiAmico(Amico amico)
 	{
 		this.amico=amico;
-	}
-	
-	private boolean isCasellaVuota()
-	{
-		return casella_posta.isEmpty();
 	}
 }
 

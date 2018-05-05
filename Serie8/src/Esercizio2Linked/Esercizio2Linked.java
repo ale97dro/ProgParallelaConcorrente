@@ -3,7 +3,7 @@ package Esercizio2Linked;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadLocalRandom;
 
 class Amico implements Runnable
@@ -15,7 +15,7 @@ class Amico implements Runnable
 	public Amico(int id)
 	{
 		this.id=id;
-		casella_posta=new LinkedBlockingQueue<String>();
+		casella_posta=new ConcurrentLinkedQueue<String>();
 	}
 	
 	@Override
@@ -34,7 +34,6 @@ class Amico implements Runnable
 					if (isCasellaVuota())
 						continue;				
 					System.out.println("Utente " + id + " ricevuto messaggio " + casella_posta.poll());
-
 				try {
 				Thread.sleep(ThreadLocalRandom.current().nextLong(5, 51));
 			} catch (InterruptedException e) {
@@ -47,7 +46,7 @@ class Amico implements Runnable
 		}
 	}
 	
-	public void spedisciLettera(String lettera)
+	public  void spedisciLettera(String lettera)
 	{
 		casella_posta.add(lettera);
 	}
@@ -57,7 +56,7 @@ class Amico implements Runnable
 		this.amico=amico;
 	}
 	
-	private  boolean isCasellaVuota()
+	private boolean isCasellaVuota()
 	{
 		return casella_posta.isEmpty();
 	}
@@ -65,9 +64,9 @@ class Amico implements Runnable
 
 public class Esercizio2Linked 
 {
-	public static void main(String[] args)	
+	public static void main(String[] args)
 	{
-		System.out.println("Esercizio 2 Linked");
+		System.out.println("Esercizio 2 Concurrent Linked");
 		
 		List<Thread>threads=new ArrayList<Thread>();
 		List<Amico>amici=new ArrayList<Amico>();
