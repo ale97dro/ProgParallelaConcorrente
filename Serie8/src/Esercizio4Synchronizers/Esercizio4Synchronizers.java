@@ -2,11 +2,9 @@ package Esercizio4Synchronizers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 class Fantino implements Runnable
 {
@@ -15,6 +13,8 @@ class Fantino implements Runnable
 	public Fantino(int id)
 	{
 		this.id=id;
+		
+		Esercizio4Synchronizers.registraThread();
 	}
 
 	@Override
@@ -48,33 +48,18 @@ class Fantino implements Runnable
 public class Esercizio4Synchronizers
 {
 	private static AtomicInteger counterFantini=new AtomicInteger(0);
-	private static Lock lock=new ReentrantLock();
-	private static Condition attesa=lock.newCondition();
+	private static Phaser phaser = new Phaser(1);
 	
-	public static void lock()
+	public static void registraThread()
 	{
-		lock.lock();
-	}
-	
-	public static void unlock()
-	{
-		lock.unlock();
+		phaser.register();
 	}
 	
 	public static void aspetta()
 	{
-		lock.lock();
-		try
-		{
-			attesa.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		finally {
-			lock.unlock();
-		}
+		phaser.arriveAndAwaitAdvance();
 	}
-	
+
 	public static void incrementaFantini()
 	{
 		counterFantini.incrementAndGet();
@@ -101,14 +86,7 @@ public class Esercizio4Synchronizers
 			
 		}
 		
-		lock.lock();
-		try 
-		{
-			attesa.signalAll();
-		}
-		finally {
-			lock.unlock();
-		}
+		phaser.arrive();
 		
 		for(Thread t : threads)
 			try {

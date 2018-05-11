@@ -44,25 +44,21 @@ class Sommatore implements Runnable
 	}
 }
 
-
 public class Esercizio1Synchronizers 
 {
 	private final static int[][] matrix = new int[10][10];
 	private final static int[] rowSum = new int[matrix.length];
 	private final static int[] colSum = new int[matrix[0].length];
 	private final static Phaser phaser=new Phaser(1);
-	private static int counter=0;
-
 	public static void registrati()
 	{
 		phaser.register();
 	}
 	public static void inserisciSommaRiga(int somma, int index)
 	{
-		try {
+		try 
+		{
 			rowSum[index]=somma;
-			counter++;
-			//phaser.register(); //mi registro
 			phaser.arriveAndDeregister(); //sblocco tutto e mi deregistro
 		}
 		catch(Exception ex)
@@ -76,8 +72,6 @@ public class Esercizio1Synchronizers
 		try
 		{
 			colSum[index]=somma;
-			counter++;
-			//phaser.register();
 			phaser.arriveAndDeregister();
 		}
 		catch(Exception ex)
@@ -111,10 +105,7 @@ public class Esercizio1Synchronizers
 		
 		try
 		{
-			//while (counter < 10) 
-			//{
 				phaser.arriveAndAwaitAdvance();
-			//}
 		}
 		catch(Exception ex)
 		{
@@ -140,7 +131,8 @@ public class Esercizio1Synchronizers
 		System.out.println("Somma colonne: "+somma_colonne);
 	}
 
-	private static void initMatrix() {
+	private static void initMatrix() 
+	{
 		Random r = new Random();
 		for (int row = 0; row < matrix.length; row++) {
 			for (int col = 0; col < matrix[row].length; col++) {
