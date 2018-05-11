@@ -30,7 +30,7 @@ class Sommatore implements Runnable
 		int somma=0;
 		
 		for(int i=0;i<riga.length;i++)
-			somma+=riga[i];
+			somma+=riga[i];	
 		Esercizio1Wait.inserisciSommaRiga(somma, id);
 		
 		somma=0;
