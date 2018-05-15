@@ -1,13 +1,15 @@
 package Esercizio2;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
 class Depot {
 	final private int id;
 	private final List<String> elements = new ArrayList<>(); //pezzi disponibili
-
+	
 	public Depot(final int id) {
 		this.id = id;
 		for (int i = 0; i < 1000; i++)
@@ -38,7 +40,6 @@ class Depot {
 
 class AssemblingWorker implements Runnable {
 	private final int id;
-
 	public AssemblingWorker(final int id) {
 		this.id = id;
 	}
@@ -47,8 +48,8 @@ class AssemblingWorker implements Runnable {
 	public void run() {
 		final Random random = new Random();
 		int failureCounter = 0;
-		while (true) {
-
+		while (true) 
+		{
 			// Choose randomly 3 different suppliers
 			final List<Depot> depots = new ArrayList<>();
 			while (depots.size() != 3) {
@@ -57,30 +58,51 @@ class AssemblingWorker implements Runnable {
 					depots.add(randomDepot);
 			}
 
+			//ordino i depot acquisiti per garantire la stessa logica di accesso
+			Collections.sort(depots, new Comparator<Depot>()
+					{
+						@Override
+						public int compare(Depot arg0, Depot arg1) {
+							return arg0.getId()-arg1.getId();
+						}
+				
+					});
+			
+			
 			//estraggo i depositi random dalla lista
 			final Depot supplier1 = depots.get(0);
 			final Depot supplier2 = depots.get(1);
 			final Depot supplier3 = depots.get(2);
 
-			
-			//Il problema è il synchronized non condiviso
-			
+			//problema di ordine dei lock?
 			log("assembling from : " + supplier1 + ", " + supplier2 + ", " + supplier3);
-			synchronized (supplier1) {
-				if (supplier1.isEmpty()) {
+			synchronized (supplier1) 
+			{
+				if (supplier1.isEmpty()) 
+				{
 					log("not all suppliers have stock available!");
 					failureCounter++;
-				} else {
-					synchronized (supplier2) {
-						if (supplier2.isEmpty()) {
+				} 
+				else 
+				{
+					synchronized (supplier2) 
+					{ 
+						if (supplier2.isEmpty()) 
+						{
 							log("not all suppliers have stock available!");
 							failureCounter++;
-						} else {
-							synchronized (supplier3) {
-								if (supplier3.isEmpty()) {
+						} 
+						else 
+						{
+							synchronized (supplier3)
+							{
+								if (supplier3.isEmpty())
+								{
 									log("not all suppliers have stock available!");
 									failureCounter++;
-								} else {
+								} 
+								else 
+								{
 									final String element1 = supplier1.getElement();
 									final String element2 = supplier2.getElement();
 									final String element3 = supplier3.getElement();
@@ -92,8 +114,9 @@ class AssemblingWorker implements Runnable {
 					}
 				}
 			}
-
-			if (failureCounter > 1000) {
+			
+			if (failureCounter > 1000) 
+			{
 				log("Finishing after " + failureCounter + " failures");
 				break;
 			}
