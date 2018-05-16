@@ -41,12 +41,11 @@ class Philosopher extends Thread {
 				break;
 			}
 			// Try to get the fork on the left
-			synchronized (leftLock) {
-				synchronized (Esercizio3.class) {
-					Esercizio3.dinerTable[table__farL] = Fork.NO_FORK;
-					Esercizio3.dinerTable[table__left] = Fork.FORK;
-					Esercizio3.dinerTable[table_philo] = PHIL_LEFT_FORK;
-				}
+			synchronized (Esercizio3.class) 
+			{
+				Esercizio3.dinerTable[table__farL] = Fork.NO_FORK;
+				Esercizio3.dinerTable[table__left] = Fork.FORK;
+				Esercizio3.dinerTable[table_philo] = PHIL_LEFT_FORK;
 
 				try {
 					sleep(Esercizio3.UNIT_OF_TIME * 1);
@@ -54,26 +53,22 @@ class Philosopher extends Thread {
 					break;
 				}
 				// Try to get the fork on the right
-				synchronized (rightLock) {
-					synchronized (Esercizio3.class) {
-						Esercizio3.dinerTable[table_philo] = PHIL_EATING;
-						Esercizio3.dinerTable[table_right] = Fork.FORK;
-						Esercizio3.dinerTable[table__farR] = Fork.NO_FORK;
-					}
-					try {
-						sleep(Esercizio3.UNIT_OF_TIME * 1);
-					} catch (final InterruptedException e) {
-						break;
-					}
-					// Release fork
-					synchronized (Esercizio3.class) {
-						Esercizio3.dinerTable[table__farL] = Fork.FORK;
-						Esercizio3.dinerTable[table__left] = Fork.NO_FORK;
-						Esercizio3.dinerTable[table_philo] = PHIL_THINKING;
-						Esercizio3.dinerTable[table_right] = Fork.NO_FORK;
-						Esercizio3.dinerTable[table__farR] = Fork.FORK;
-					}
+				Esercizio3.dinerTable[table_philo] = PHIL_EATING;
+				Esercizio3.dinerTable[table_right] = Fork.FORK;
+				Esercizio3.dinerTable[table__farR] = Fork.NO_FORK;
+				try {
+					sleep(Esercizio3.UNIT_OF_TIME * 1);
+				} catch (final InterruptedException e) {
+					break;
 				}
+			}
+			// Release fork
+			synchronized (Esercizio3.class) {
+				Esercizio3.dinerTable[table__farL] = Fork.FORK;
+				Esercizio3.dinerTable[table__left] = Fork.NO_FORK;
+				Esercizio3.dinerTable[table_philo] = PHIL_THINKING;
+				Esercizio3.dinerTable[table_right] = Fork.NO_FORK;
+				Esercizio3.dinerTable[table__farR] = Fork.FORK;
 			}
 		}
 	}
