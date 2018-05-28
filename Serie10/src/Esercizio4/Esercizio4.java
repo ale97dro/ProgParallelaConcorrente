@@ -8,6 +8,9 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -230,10 +233,11 @@ public class Esercizio4 extends JPanel
 		// will be re-enabled when all threads finish
 		threadCountSelect.setEnabled(false);
 
-		final int threadCount = ((Integer) threadCountSelect.getSelectedItem())
-				.intValue();
-		workers = new Thread[threadCount];
-
+		
+		final int threadCount = ((Integer) threadCountSelect.getSelectedItem()).intValue();
+		ExecutorService esecutore = Executors.newFixedThreadPool(threadCount);
+		
+		
 		// How many rows of pixels should each thread compute?
 		int rowsPerThread;
 
@@ -256,9 +260,7 @@ public class Esercizio4 extends JPanel
 				endRow = height - 1;
 			else
 				endRow = rowsPerThread * (i + 1) - 1;
-			final String threadName = "WorkerThread " + (i + 1) + "/"
-					+ threadCount;
-			workers[i] = new Thread(threadName) {
+			esecutore.execute(new Runnable() {
 				@Override
 				public void run() {
 					try {
@@ -276,12 +278,11 @@ public class Esercizio4 extends JPanel
 						threadFinished();
 					}
 				}
-			};
+			});
 		}
 
-		for (int i = 0; i < threadCount; i++)
-			workers[i].start();
-
+		esecutore.shutdown();
+		
 	}
 
 	/**
@@ -300,14 +301,13 @@ public class Esercizio4 extends JPanel
 	 */
 	synchronized void threadFinished() {
 		threadsCompleted++;
-		if (threadsCompleted == workers.length) {
+		if (threadsCompleted == ((Integer) threadCountSelect.getSelectedItem())
+				.intValue()) {
 			// all threads have finished
 			startButton.setText("Start");
 			startButton.setEnabled(true);
 			// Make sure running is false after the thread ends.
 			running = false;
-
-			workers = null;
 			threadCountSelect.setEnabled(true); // re-enable pop-up menu
 			imagePanel.repaint();
 		}
