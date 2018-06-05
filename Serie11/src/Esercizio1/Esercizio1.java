@@ -117,7 +117,7 @@ public class Esercizio1
 		// Sort array
 		System.out.println("Sorting");
 		final S11Es1Timer t = new S11Es1Timer();
-		ForkJoinPool pool = new ForkJoinPool(4);
+		ForkJoinPool pool = new ForkJoinPool(3);
 		MergeSort merger = new MergeSort(unsortedInts);
 		t.start();
 		pool.invoke(merger);

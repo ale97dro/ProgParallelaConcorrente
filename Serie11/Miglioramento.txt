@@ -1,2 +1,4 @@
-16012 ms
-7857 ms
+                normale - 16012 ms 1 core
+                8764 2 core
+                8383 3 core
+               7857 ms 4 core
