@@ -252,5 +252,23 @@ public class Esercizio1 {
 		for(Earthquake e : terremotiMagnitutoVicini)
 			System.out.println(e.getPosition().distance(supsi));
 		
+		//Quarto
+		List<Earthquake> terremotiLatitudine46 = quakes.stream()
+				.filter(e -> e.getPosition().getLat()>=46 && e.getPosition().getLat()<47)
+				.collect(Collectors.toList());
+		
+		System.out.println("Quarto stream");
+		for(Earthquake e : terremotiLatitudine46)
+			System.out.println(e.getPosition().getLat());
+		
+		//Quinto
+		List<Earthquake> terremotiLongitudine8 = quakes.stream()
+				.filter(e -> e.getPosition().getLon()>=8 && e.getPosition().getLon()<9)
+				.collect(Collectors.toList());
+		
+		System.out.println("Quinto stream");
+		for(Earthquake e : terremotiLongitudine8)
+			System.out.println(e.getPosition().getLon());
+		
 	}
 }
