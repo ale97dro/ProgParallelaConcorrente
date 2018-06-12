@@ -1,4 +1,4 @@
-package Esercizio1;
+package Esercizio2;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,6 +19,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 final class Coordinate {
@@ -130,7 +133,7 @@ class Earthquake {
 	}
 }
 
-public class Esercizio1 {
+public class Esercizio2 {
 
 	private static List<Earthquake> loadEarthquakeDB(final String address, final boolean isLocalFile) {
 		final List<Earthquake> quakes = new ArrayList<Earthquake>();
@@ -185,26 +188,42 @@ public class Esercizio1 {
 		return quakes;
 	}
 
-	public static void main(final String[] args) {
+	public static void main(final String[] args) throws InterruptedException, ExecutionException {
+		
+		Scanner wait = new Scanner(System.in);
+		
+		String x = wait.next();
+		
+		System.out.println(x);
+		
+		
+		
 		//final String URI = "Esercizi/serie12/2014-2015.csv";
 		final String URI ="2014-2015.csv";
 		final long startTime = System.currentTimeMillis();
 		
-		final List<Earthquake> quakes = loadEarthquakeDB(URI, true);
+		//final List<Earthquake> quakes = loadEarthquakeDB(URI, true);
 		final long computeTime = System.currentTimeMillis();
-
-		if (quakes.isEmpty()) {
+		
+		
+		//carico con thread a parte il db
+		CompletableFuture<List<Earthquake>> quakes = CompletableFuture.supplyAsync(() -> {
+			return loadEarthquakeDB(URI, true);
+		});
+		
+		
+		if (quakes.get().isEmpty()) {
 			System.out.println("No earthquakes found!");
 			return;
 		}
-		System.out.println("Loaded " + quakes.size() + " earthquakes");
+		System.out.println("Loaded " + quakes.get().size() + " earthquakes");
 
 		final Coordinate supsi = new Coordinate(46.0234, 8.9172);
 
 		System.out.println("Searching for nearest earthquake ...");
 		Earthquake curNearestQuake = null;
 		double curNearestDistance = Double.MAX_VALUE;
-		for (final Earthquake quake : quakes) {
+		for (final Earthquake quake : quakes.get()) {
 			final double distance = quake.getPosition().distance(supsi);
 			if (curNearestDistance > distance) {
 				curNearestDistance = distance;
@@ -213,26 +232,47 @@ public class Esercizio1 {
 		}
 		
 		
-		
 		// Results
 		System.out.println("Nearest  : " + curNearestQuake + " distance: " + curNearestDistance);
 		
 		//NUOVE COSE
-		piuLontano(quakes, supsi);
-		piuForte(quakes, supsi);
-		magnitudoVicini(quakes, supsi);
-		latitudine46(quakes);
-		longitudine8(quakes);
-		fasceProfondita(quakes);
-		fasceIntensita(quakes);
+		CompletableFuture<Earthquake> piuLontano = quakes.thenApplyAsync((q) -> piuLontano(q, supsi));
+		CompletableFuture<Earthquake> piuForte = quakes.thenApplyAsync((q) -> piuForte(q, supsi));
+		CompletableFuture<List<Earthquake>> magnitudoVicini = quakes.thenApplyAsync((q) -> magnitudoVicini(q, supsi));
+		CompletableFuture<Long> latitudine46 = quakes.thenApplyAsync((q) -> latitudine46(q));
+		CompletableFuture<Long> longitudine8 = quakes.thenApplyAsync((q) -> longitudine8(q));
+		CompletableFuture<Map<Integer, Long>> profondita = quakes.thenApplyAsync((q)->fasceProfondita(q));
+		CompletableFuture<Map<Integer, Long>> intensita = quakes.thenApplyAsync((q)->fasceIntensita(q));
+		
+		
+		//Risultati
+		
+		System.out.println("Terremoto più lontano: " + piuLontano.get().getPosition().distance(supsi));
+		System.out.println("Magnituto più forte: " + piuForte.get().getMagnitude());
+		
+		for(Earthquake e : magnitudoVicini.get())
+			System.out.println(e.getPosition().distance(supsi));
+		
+		System.out.println("Latitudine 46: "+latitudine46);
+		System.out.println("Longitudine 8: "+longitudine8);
+		
+		for(Integer f : profondita.get().keySet())
+			System.out.println(f+" - "+(f+1)+": "+profondita.get().get(f));
+		
+		for(Integer f : intensita.get().keySet())
+			System.out.println(f+" - "+(f+1)+": "+intensita.get().get(f));
+		
 		
 		final long endTime = System.currentTimeMillis();
 		System.out.println("Completed in " + ((endTime - startTime)) + " ms" + " (computation time=" + (endTime - computeTime) + " ms)");
+		
+		
+		x = wait.next();
 	}
 	
-	public static void piuLontano(List<Earthquake> quakes, Coordinate supsi)
+	public static Earthquake piuLontano(List<Earthquake> quakes, Coordinate supsi)
 	{
-		Earthquake piuLontano = quakes.stream()
+		return quakes.parallelStream()
 				.max(new Comparator<Earthquake>() 
 				{
 					@Override
@@ -241,13 +281,11 @@ public class Esercizio1 {
 						return (int) (arg0.getPosition().distance(supsi) - arg1.getPosition().distance(supsi));
 					}
 				}).get();
-
-		System.out.println("Terremoto più lontano: " + piuLontano.getPosition().distance(supsi));
 	}
 	
-	public static void piuForte(List<Earthquake> quakes, Coordinate supsi) 
+	public static Earthquake piuForte(List<Earthquake> quakes, Coordinate supsi) 
 	{
-		Earthquake piuForte = quakes.stream()
+		return quakes.parallelStream()
 				.max(new Comparator<Earthquake>() 
 				{
 					@Override
@@ -256,65 +294,38 @@ public class Esercizio1 {
 						return (int) (arg0.getMagnitude() - arg1.getMagnitude());
 					}
 				}).get();
-
-		System.out.println("Magnituto più forte: " + piuForte.getMagnitude());
 	}
 
-	public static void magnitudoVicini(List<Earthquake> quakes, Coordinate supsi)
+	public static List<Earthquake> magnitudoVicini(List<Earthquake> quakes, Coordinate supsi)
 	{
-		List<Earthquake> terremotiMagnitutoVicini = quakes.stream()
+		return quakes.parallelStream()
 				.filter(e -> e.getMagnitude() > 4 && e.getMagnitude() < 6)
 				.filter(e -> e.getPosition().distance(supsi) > 2000).collect(Collectors.toList());
-		
-		for(Earthquake e : terremotiMagnitutoVicini)
-			System.out.println(e.getPosition().distance(supsi));
 	}
 
-	public static void latitudine46(List<Earthquake> quakes)
+	public static long latitudine46(List<Earthquake> quakes)
 	{
-		/*List<Earthquake> terremotiLatitudine46 = quakes.stream()
+		return quakes.parallelStream()
 				.filter(e -> e.getPosition().getLat() >= 46 && e.getPosition().getLat() < 47)
-				.collect(Collectors.toList());*/
-		
-		long terremotiLatitudine46 = quakes.stream()
-		.filter(e -> e.getPosition().getLat() >= 46 && e.getPosition().getLat() < 47)
-		.count();
-
-		System.out.println("Latitudine 46: "+terremotiLatitudine46);
+				.count();
 	}
 
-	public static void longitudine8(List<Earthquake> quakes)
+	public static long longitudine8(List<Earthquake> quakes)
 	{
-		long terremotiLongitudine8 = quakes.stream()
+		return quakes.parallelStream()
 				.filter(e -> e.getPosition().getLon() >= 8 && e.getPosition().getLon() < 9)
 				.count();
-
-		System.out.println("Longitudine 8: "+terremotiLongitudine8);
 	}
 
-	public static void fasceProfondita(List<Earthquake> quakes)
+	public static Map<Integer, Long> fasceProfondita(List<Earthquake> quakes)
 	{
-		Map<Integer, Long> profondita = quakes.stream()
+		return quakes.parallelStream()
 				.collect(Collectors.groupingBy(((e) -> (int)e.getDepth()/100), Collectors.counting()));
-		
-		System.out.println("Fasce profondita");
-		
-		for(Integer f : profondita.keySet())
-		{
-			System.out.println(f+" - "+(f+1)+": "+profondita.get(f));
-		}
 	}
 
-	public static void fasceIntensita(List<Earthquake> quakes)
+	public static Map<Integer, Long> fasceIntensita(List<Earthquake> quakes)
 	{
-		Map<Integer, Long> intensita = quakes.stream()
+		return quakes.parallelStream()
 				.collect(Collectors.groupingBy(((e) -> (int)e.getMagnitude()), Collectors.counting()));
-		
-		System.out.println("Fasce intensita");
-		
-		for(Integer f : intensita.keySet())
-		{
-			System.out.println(f+" - "+(f+1)+": "+intensita.get(f));
-		}
 	}
 }

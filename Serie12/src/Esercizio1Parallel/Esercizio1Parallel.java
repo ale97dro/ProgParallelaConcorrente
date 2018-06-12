@@ -1,4 +1,4 @@
-package Esercizio1;
+package Esercizio1Parallel;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 final class Coordinate {
@@ -130,7 +131,7 @@ class Earthquake {
 	}
 }
 
-public class Esercizio1 {
+public class Esercizio1Parallel {
 
 	private static List<Earthquake> loadEarthquakeDB(final String address, final boolean isLocalFile) {
 		final List<Earthquake> quakes = new ArrayList<Earthquake>();
@@ -187,6 +188,15 @@ public class Esercizio1 {
 
 	public static void main(final String[] args) {
 		//final String URI = "Esercizi/serie12/2014-2015.csv";
+		
+		Scanner wait = new Scanner(System.in);
+		
+		String x = wait.next();
+		
+		System.out.println(x);
+		
+		
+		
 		final String URI ="2014-2015.csv";
 		final long startTime = System.currentTimeMillis();
 		
@@ -213,7 +223,6 @@ public class Esercizio1 {
 		}
 		
 		
-		
 		// Results
 		System.out.println("Nearest  : " + curNearestQuake + " distance: " + curNearestDistance);
 		
@@ -228,11 +237,13 @@ public class Esercizio1 {
 		
 		final long endTime = System.currentTimeMillis();
 		System.out.println("Completed in " + ((endTime - startTime)) + " ms" + " (computation time=" + (endTime - computeTime) + " ms)");
+		
+		x = wait.next();
 	}
 	
 	public static void piuLontano(List<Earthquake> quakes, Coordinate supsi)
 	{
-		Earthquake piuLontano = quakes.stream()
+		Earthquake piuLontano = quakes.parallelStream()
 				.max(new Comparator<Earthquake>() 
 				{
 					@Override
@@ -247,7 +258,7 @@ public class Esercizio1 {
 	
 	public static void piuForte(List<Earthquake> quakes, Coordinate supsi) 
 	{
-		Earthquake piuForte = quakes.stream()
+		Earthquake piuForte = quakes.parallelStream()
 				.max(new Comparator<Earthquake>() 
 				{
 					@Override
@@ -262,7 +273,7 @@ public class Esercizio1 {
 
 	public static void magnitudoVicini(List<Earthquake> quakes, Coordinate supsi)
 	{
-		List<Earthquake> terremotiMagnitutoVicini = quakes.stream()
+		List<Earthquake> terremotiMagnitutoVicini = quakes.parallelStream()
 				.filter(e -> e.getMagnitude() > 4 && e.getMagnitude() < 6)
 				.filter(e -> e.getPosition().distance(supsi) > 2000).collect(Collectors.toList());
 		
@@ -272,20 +283,16 @@ public class Esercizio1 {
 
 	public static void latitudine46(List<Earthquake> quakes)
 	{
-		/*List<Earthquake> terremotiLatitudine46 = quakes.stream()
+		long terremotiLatitudine46 = quakes.parallelStream()
 				.filter(e -> e.getPosition().getLat() >= 46 && e.getPosition().getLat() < 47)
-				.collect(Collectors.toList());*/
-		
-		long terremotiLatitudine46 = quakes.stream()
-		.filter(e -> e.getPosition().getLat() >= 46 && e.getPosition().getLat() < 47)
-		.count();
+				.count();
 
 		System.out.println("Latitudine 46: "+terremotiLatitudine46);
 	}
 
 	public static void longitudine8(List<Earthquake> quakes)
 	{
-		long terremotiLongitudine8 = quakes.stream()
+		long terremotiLongitudine8 = quakes.parallelStream()
 				.filter(e -> e.getPosition().getLon() >= 8 && e.getPosition().getLon() < 9)
 				.count();
 
@@ -294,27 +301,23 @@ public class Esercizio1 {
 
 	public static void fasceProfondita(List<Earthquake> quakes)
 	{
-		Map<Integer, Long> profondita = quakes.stream()
+		Map<Integer, Long> profondita = quakes.parallelStream()
 				.collect(Collectors.groupingBy(((e) -> (int)e.getDepth()/100), Collectors.counting()));
 		
 		System.out.println("Fasce profondita");
 		
 		for(Integer f : profondita.keySet())
-		{
 			System.out.println(f+" - "+(f+1)+": "+profondita.get(f));
-		}
 	}
 
 	public static void fasceIntensita(List<Earthquake> quakes)
 	{
-		Map<Integer, Long> intensita = quakes.stream()
+		Map<Integer, Long> intensita = quakes.parallelStream()
 				.collect(Collectors.groupingBy(((e) -> (int)e.getMagnitude()), Collectors.counting()));
 		
 		System.out.println("Fasce intensita");
 		
 		for(Integer f : intensita.keySet())
-		{
 			System.out.println(f+" - "+(f+1)+": "+intensita.get(f));
-		}
 	}
 }
